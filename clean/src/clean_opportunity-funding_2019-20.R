@@ -1,3 +1,9 @@
+# Authors:     Everet
+# Maintainers: Everet
+# Copyright:   2020, Everet, AGPL 3.0 or later
+# =========================================
+# DE-school-finance/clean/src/clean_opportunity_funding_2019-20.R
+
 library(dplyr)
 library(purrr)
 library(readr)

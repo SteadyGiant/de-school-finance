@@ -1,0 +1,141 @@
+<!-- Authors:     Everet -->
+<!-- Maintainers: Everet -->
+<!-- Copyright:   2020, Everet, AGPL 3.0 or later -->
+<!-- ========================================= -->
+<!-- DE-school-finance/viz/src/report.Rmd -->
+---
+title: "Aid Doesn't Follow Need"
+subtitle: "Delaware's School Funding Formula"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r constants}
+DATA_FILE = here::here("clean/output/final.csv")  # De-duped
+SHAPE_FILE = here::here("clean/output/final.geojson")  # No techs
+```
+
+```{r libs}
+library(dplyr)
+library(ggplot2)
+library(glue)
+library(here)
+library(scales)
+library(sf)
+library(stringr)
+library(tidyr)
+source(here::here("viz/src/plot_utils.R"), local = TRUE)
+source(here::here("viz/src/leaflet_utils.R"), local = TRUE)
+```
+
+```{r data, include=FALSE}
+data_sf = sf::st_read(SHAPE_FILE)
+data_df = readr::read_csv(DATA_FILE)
+data_long = data_df %>%
+  tidyr::pivot_longer(c(state_revenue_pp_1819, local_revenue_pp_1819)) %>%
+  dplyr::mutate(
+    name = dplyr::recode_factor(
+      name,
+      "state_revenue_pp_1819" = "State",
+      "local_revenue_pp_1819" = "Local"
+    )
+  )
+data_long_opp = data_df %>%
+  tidyr::pivot_longer(
+    c(opp_fund_pp_1920, state_revenue_pp_1819, local_revenue_pp_1819)
+  ) %>%
+  dplyr::mutate(
+    name = dplyr::recode_factor(
+      name,
+      "opp_fund_pp_1920" = "Opportunity",
+      "state_revenue_pp_1819" = "State",
+      "local_revenue_pp_1819" = "Local"
+    )
+  )
+```
+
+## Overview
+
+```{r global_features}
+y_lab = "Total revenue per pupil (2018-19)"
+x_lab = "Low Income (% of 2029-20 enrollment)"
+caption_sca = "Dot size: 2019-20 enrollment"
+caption_bar = glue::glue("Labels: {x_lab}")
+palette =  c("#7CAE00", "#00BFC4")
+palette_opp = c("#F8766D", palette)
+tooltip = "District: <b>{data_df$district}</b>
+  Total revenue per pupil: <b>{scales::dollar(data_df$state_local_revenue_pp_1819)}</b>
+  State revenue per pupil: <b>{scales::dollar(data_df$state_revenue_pp_1819)}</b>
+  Local revenue per pupil: <b>{scales::dollar(data_df$local_revenue_pp_1819)}</b>
+  Enrollment: <b>{cma(data_df$enrollment_1920)}</b>
+  Low income: <b>{pct(data_df$pct_low_income_1920)}</b>"
+```
+
+```{r scatter_revenue_lowincome}
+p = data_df %>%
+  ggplot2::ggplot(
+    ggplot2::aes(
+      x = pct_low_income_1920,
+      y = state_local_revenue_pp_1819,
+      size = enrollment_1920,
+      color = district,
+      text = glue::glue(tooltip)
+    )
+  ) +
+  ggplot2::geom_point() +
+  ggplot2::scale_x_continuous(labels = pct) +
+  format_y_axis() +
+  add_theme() +
+  ggplot2::guides(size = FALSE, color = FALSE) +
+  ggplot2::labs(x = x_lab, y = y_lab, caption = caption_sca)
+
+plotly::ggplotly(p, tooltip = "text") %>%
+  plotly::hide_guides()
+```
+
+`r caption_sca`
+
+***
+
+```{r bar_revenue}
+data_long %>%
+  dplyr::rename(y_var = state_local_revenue_pp_1819) %>%
+  stacked_bar_revenue(title = "", palette = palette)
+```
+
+***
+
+```{r bar_revenue_opp}
+data_long_opp %>%
+  dplyr::rename(y_var = state_local_revenue_opp_fund_pp) %>%
+  stacked_bar_revenue(title = "", palette = palette_opp)
+```
+
+***
+
+```{r}
+tooltip = stringr::str_replace_all(
+  tooltip, c("\\n" = "<br>", "data_df" = "data_sf")
+)
+make_leaflet(
+  data_sf,
+  shade_var = data_sf$state_local_revenue_pp_1819,
+  title = "Total revenue<br>per pupil",
+  tooltip = glue::glue(tooltip),
+  legend_label_prefix = "$"
+)
+```
+
+***
+
+## Data Sources
+
+- Revenue per pupil: [*Educational Statistics Report* (2018-19)](https://www.doe.k12.de.us/site/Default.aspx?PageID=1521)
+
+- Enrollment: [*Office of Management and Budget* (2019-20)](https://omb.delaware.gov/)
+
+- Opportunity Funding: [*Office of the Governor* (2019-20)](https://governor.delaware.gov/district-charter-spending/)

@@ -21,7 +21,7 @@ OUTFILE := $(OUTDIR)/Aid-Doesnt-Follow-Need.html
 INFILE := $(INDIR)/final.csv $(INDIR)/final.geojson
 $(OUTFILE): \
 		$(SRCDIR)/render.R \
-		$(SRCDIR)/viz.Rmd \
+		$(SRCDIR)/report.Rmd \
 		$(SRCDIR)/plot_utils.R \
 		$(SRCDIR)/leaflet_utils.R \
 		$(INFILE)

@@ -14,7 +14,6 @@ CALL_R := Rscript --vanilla
 
 .PHONY: all clean
 all: \
-		$(OUTDIR)/enrollment_2018-19.csv \
 		$(OUTDIR)/enrollment_2019-20.csv \
 		$(OUTDIR)/revenue_2018-19.csv \
 		$(OUTDIR)/opportunity-funding_2019-20.csv \
@@ -24,13 +23,6 @@ clean:
 	-rm -r $(OUTDIR)/*
 
 ### Enrollment
-
-OUTFILE := $(OUTDIR)/enrollment_2018-19.csv
-INFILE := $(EXTRACT_DIR)/Student_Enrollment.csv
-$(OUTFILE): \
-		$(SRCDIR)/clean_enrollment_2018-19.R \
-		$(INFILE)
-	$(CALL_R) $<
 
 OUTFILE := $(OUTDIR)/enrollment_2019-20.csv
 INFILE := $(INDIR)/Enrollment-and-Unit-Data-Sen-Poore.xlsx
@@ -58,8 +50,12 @@ $(OUTFILE): \
 ### Join it all together
 
 OUTFILE := $(OUTDIR)/final.geojson $(OUTDIR)/final.csv
+INFILE := $(EXTRACT_DIR)/Student_Enrollment.csv \
+		$(EXTRACT_DIR)/school-districts.geojson \
+		$(OUTDIR)/enrollment_2019-20.csv \
+		$(OUTDIR)/revenue_2018-19.csv \
+		$(OUTDIR)/opportunity-funding_2019-20.csv
 $(OUTFILE): \
 		$(SRCDIR)/join.R \
-		$(OUTDIR)/enrollment_2018-19.csv \
-		$(OUTDIR)/revenue_2018-19.csv
+		$(INFILE)
 	$(CALL_R) $<

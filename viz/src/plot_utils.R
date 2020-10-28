@@ -1,3 +1,9 @@
+# Authors:     Everet
+# Maintainers: Everet
+# Copyright:   2020, Everet, AGPL 3.0 or later
+# =========================================
+# DE-school-finance/viz/src/plot_utils.R
+
 library(dplyr)
 library(ggplot2)
 library(scales)
