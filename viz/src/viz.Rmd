@@ -10,9 +10,8 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
 ```{r constants}
-INDIR = here::here("viz", "input")
-INFILE = here::here("clean", "output", "final.csv")
-IN_SHP = here::here("clean", "output", "final.geojson")
+DATA_FILE = here::here("clean/output/final.csv")  # De-duped
+SHAPE_FILE = here::here("clean/output/final.geojson")  # No techs
 ```
 
 ```{r libs}
@@ -20,114 +19,106 @@ library(dplyr)
 library(ggplot2)
 library(glue)
 library(here)
-library(readr)
 library(scales)
 library(sf)
 library(stringr)
 library(tidyr)
-source(here::here("viz", "src", "plot_utils.R"), local = TRUE)
-source(here::here("viz", "src", "leaflet_utils.R"), local = TRUE)
+source(here::here("viz/src/plot_utils.R"), local = TRUE)
+source(here::here("viz/src/leaflet_utils.R"), local = TRUE)
 ```
 
 ```{r data, include=FALSE}
-data =
-  readr::read_csv(INFILE) %>%
-  dplyr::select(
-    district,
-    fall_enrollment,
-    pct_fall_enrollment_low_income,
-    opp_funding_pp,
-    state_revenue_pp,
-    local_revenue_pp,
-    state_local_revenue_pp,
-    state_local_opp_revenue_pp
-  )
-data_long = data %>%
-  tidyr::pivot_longer(c(state_revenue_pp, local_revenue_pp)) %>%
+data_sf = sf::st_read(SHAPE_FILE)
+data_df = readr::read_csv(DATA_FILE)
+data_long = data_df %>%
+  tidyr::pivot_longer(c(state_revenue_pp_1819, local_revenue_pp_1819)) %>%
   dplyr::mutate(
     name = dplyr::recode_factor(
       name,
-      "state_revenue_pp" = "State",
-      "local_revenue_pp" = "Local"
+      "state_revenue_pp_1819" = "State",
+      "local_revenue_pp_1819" = "Local"
     )
   )
-data_long_opp = data %>%
-  tidyr::pivot_longer(c(opp_funding_pp, state_revenue_pp, local_revenue_pp)) %>%
+data_long_opp = data_df %>%
+  tidyr::pivot_longer(
+    c(opp_fund_pp_1920, state_revenue_pp_1819, local_revenue_pp_1819)
+  ) %>%
   dplyr::mutate(
     name = dplyr::recode_factor(
       name,
-      "opp_funding_pp" = "Opportunity",
-      "state_revenue_pp" = "State",
-      "local_revenue_pp" = "Local"
+      "opp_fund_pp_1920" = "Opportunity",
+      "state_revenue_pp_1819" = "State",
+      "local_revenue_pp_1819" = "Local"
     )
   )
-sd = sf::st_read(IN_SHP)
 ```
 
 ## Overview
 
 ```{r global_features}
 y_lab = "Total revenue per pupil (2018-19)"
-x_lab = "Low Income (% of Fall enrollment)"
+x_lab = "Low Income (% of 2029-20 enrollment)"
+caption_sca = "Dot size: 2019-20 enrollment"
 caption_bar = glue::glue("Labels: {x_lab}")
 palette =  c("#7CAE00", "#00BFC4")
 palette_opp = c("#F8766D", palette)
-tooltip = "District: <b>{data$district}</b>
-  Total revenue per pupil: <b>{scales::dollar(data$state_local_revenue_pp)}</b>
-  State revenue per pupil: <b>{scales::dollar(data$state_revenue_pp)}</b>
-  Local revenue per pupil: <b>{scales::dollar(data$local_revenue_pp)}</b>
-  Fall enrollment: <b>{cma(data$fall_enrollment)}</b>
-  Low income: <b>{pct(data$pct_fall_enrollment_low_income)}</b>"
+tooltip = "District: <b>{data_df$district}</b>
+  Total revenue per pupil: <b>{scales::dollar(data_df$state_local_revenue_pp_1819)}</b>
+  State revenue per pupil: <b>{scales::dollar(data_df$state_revenue_pp_1819)}</b>
+  Local revenue per pupil: <b>{scales::dollar(data_df$local_revenue_pp_1819)}</b>
+  Enrollment: <b>{cma(data_df$enrollment_1920)}</b>
+  Low income: <b>{pct(data_df$pct_low_income_1920)}</b>"
 ```
 
 ```{r scatter_revenue_lowincome}
-p = data %>%
+p = data_df %>%
   ggplot2::ggplot(
     ggplot2::aes(
-      x = pct_fall_enrollment_low_income,
-      y = state_local_revenue_pp,
-      size = fall_enrollment,
+      x = pct_low_income_1920,
+      y = state_local_revenue_pp_1819,
+      size = enrollment_1920,
       color = district,
       text = glue::glue(tooltip)
     )
   ) +
   ggplot2::geom_point() +
-  add_theme() +
   ggplot2::scale_x_continuous(labels = pct) +
   format_y_axis() +
+  add_theme() +
   ggplot2::guides(size = FALSE, color = FALSE) +
-  ggplot2::labs(x = x_lab, y = y_lab)
+  ggplot2::labs(x = x_lab, y = y_lab, caption = caption_sca)
+
 plotly::ggplotly(p, tooltip = "text") %>%
   plotly::hide_guides()
 ```
+
+`r caption_sca`
 
 ***
 
 ```{r bar_revenue}
 data_long %>%
-  dplyr::rename(y_var = state_local_revenue_pp) %>%
+  dplyr::rename(y_var = state_local_revenue_pp_1819) %>%
   stacked_bar_revenue(title = "", palette = palette)
 ```
 
 ***
 
 ```{r bar_revenue_opp}
-# data_long_opp %>%
-#   dplyr::rename(y_var = state_local_opp_revenue_pp) %>%
-#   stacked_bar_revenue(
-#     title = "Opportunity funding won't address need",
-#     palette = palette_opp
-#   )
+data_long_opp %>%
+  dplyr::rename(y_var = state_local_revenue_opp_fund_pp) %>%
+  stacked_bar_revenue(title = "", palette = palette_opp)
 ```
 
 ***
 
 ```{r}
-data = sd
-tooltip = stringr::str_replace_all(tooltip, c("\\n" = "<br>"))
+tooltip = stringr::str_replace_all(
+  tooltip, c("\\n" = "<br>", "data_df" = "data_sf")
+)
 make_leaflet(
-  data,
-  shade_var = data$state_local_revenue_pp,
+  data_sf,
+  shade_var = data_sf$state_local_revenue_pp_1819,
   title = "Total revenue<br>per pupil",
   tooltip = glue::glue(tooltip),
   legend_label_prefix = "$"
@@ -138,8 +129,8 @@ make_leaflet(
 
 ## Data Sources
 
-- Revenue per pupil: *Educational Statistics Report* (2018-19)
+- Revenue per pupil: [*Educational Statistics Report* (2018-19)](https://www.doe.k12.de.us/site/Default.aspx?PageID=1521)
 
-- Low income enrollment, Fall enrollment: *Open Data Delaware* (2018-19)
+- Enrollment: [*Office of Management and Budget* (2019-20)](https://omb.delaware.gov/)
 
-*Note:* Enrollment in the *Educational Statistics Report* matches enrollment on Open Data Delaware for 2018-19, *except for* Caesar Rodney and Red Clay school districts.
+- Opportunity Funding: [*Office of the Governor* (2019-20)](https://governor.delaware.gov/district-charter-spending/)

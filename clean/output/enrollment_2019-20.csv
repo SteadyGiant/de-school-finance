@@ -1,7 +1,8 @@
-district,enrollment,regular_education,special_education,el,low_income,intensive,complex
+school_districts_charters,enrollment,regular_education,special_education,el,low_income,intensive,complex
 Appoquinimink,11737,9881,1856,358,1347,384,211
 Brandywine,10548,8728,1820,536,3001,360,231
 Caesar Rodney,7695,6424,1271,311,2198,305,282
+Dover Air Force Base,488,425,63,16,16,16,11
 Cape Henlopen,5860,4832,1028,444,1462,140,311
 Capital,6605,5181,1424,447,3074,329,422
 Christina,14003,10805,3198,1955,5840,817,923
@@ -11,9 +12,37 @@ Indian River,10942,9097,1845,2174,3434,616,408
 Lake Forest,3721,3004,717,96,1462,137,38
 Laurel,2645,2230,415,320,1074,54,41
 Milford,4301,3670,631,701,1736,134,74
+New Castle County Vo-Tech,4669,4060,609,137,1257,195,25
 Polytech,1192,1076,116,3,206,16,5
 Red Clay,15520,12785,2735,2476,5333,637,517
 Seaford,3516,2887,629,635,1584,156,94
 Smyrna,5882,4867,1015,107,1388,348,165
 Sussex Tech,1241,1131,110,8,206,26,8
 Woodbridge,2594,2170,424,327,1064,152,55
+Subtotal Districts:,124485,102457,22028,12356,39580,5690,4145
+Academia Antonia Alonso,595,547,48,324,313,9,5
+Academy of Dover,266,239,27,31,171,9,4
+Campus Community Charter School,420,376,44,8,153,13,0
+Charter School of New Castle,766,686,80,23,352,9,0
+Charter School Wilmington,971,965,6,1,38,5,0
+Delaware Military Academy,578,566,12,3,42,0,0
+Early College HS,421,394,27,3,128,2,1
+East Side Charter School,426,368,58,2,335,16,9
+First State Military Academy,452,381,71,6,92,16,18
+First State Montessori,599,534,65,11,58,15,1
+Freire Charter School,487,386,101,9,208,30,8
+Gateway Lab School,177,86,91,9,65,34,20
+Great Oaks Charter School,481,387,94,25,263,21,8
+Kuumba,668,569,99,3,413,8,1
+Las Americas,946,845,101,298,209,35,9
+MOT Charter School,1375,1290,85,25,70,22,8
+Newark Charter School,2412,2241,171,90,196,35,27
+Odyssey Charter School,1916,1783,133,76,239,10,6
+Positive Outcomes,121,43,78,0,38,31,34
+Providence Creek Academy,703,649,54,12,113,11,1
+Sussex Academy,858,828,30,15,70,6,4
+Thomas Edison Charter School,728,676,52,4,550,0,0
+Design Thinking Academy,0,NA,NA,NA,NA,NA,NA
+Subtotal Charters:,16366,14839,1527,978,4116,337,164
+Totals:,140851,117296,23555,13334,43696,6027,4309
+Totals Excluding Dover Air Force Base:,140363,116871,23492,13318,43680,6011,4298

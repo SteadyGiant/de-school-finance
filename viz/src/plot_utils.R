@@ -24,8 +24,8 @@ format_y_axis = function() {
 stacked_bar_revenue = function(revenue_long, title, palette) {
   p = revenue_long %>%
     ggplot2::ggplot(
-      ggplot2::aes(x = stats::reorder(
-        district, pct_fall_enrollment_low_income), y = value
+      ggplot2::aes(
+        x = stats::reorder(district, pct_low_income_1920), y = value
       )
     ) +
     ggplot2::geom_bar(
@@ -37,7 +37,7 @@ stacked_bar_revenue = function(revenue_long, title, palette) {
       ggplot2::aes(
         label = dplyr::if_else(
           name == "State",
-          pct(pct_fall_enrollment_low_income),
+          pct(pct_low_income_1920),
           NULL
         ),
         y = y_var

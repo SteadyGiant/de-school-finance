@@ -4,13 +4,17 @@
 # =========================================
 # DE-school-finance/extract/Makefile
 
+HERE := $(shell git rev-parse --show-toplevel)
+OUTDIR := $(HERE)/extract/output
+SRCDIR := $(HERE)/extract/src
+
 CALL_R := Rscript --vanilla
-OUTDIR := extract/output
 
 .PHONY: all clean
 all: $(OUTDIR)/school-districts.geojson
-clean: -rm -r $(OUTDIR)/*
+clean:
+		-rm -r $(OUTDIR)/school-districts.geojson
 
 $(OUTDIR)/school-districts.geojson: \
-		src/get_shapefile.R
+		$(SRCDIR)/get_shapefile.R
 	$(CALL_R) $<
